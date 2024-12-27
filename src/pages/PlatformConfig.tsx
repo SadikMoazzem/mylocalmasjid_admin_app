@@ -3,42 +3,31 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
 import { IconEdit, IconTrash, IconPlus } from '@tabler/icons-react';
 import { useState, useEffect } from 'react';
-import api from '../services/api';
-
-interface Config {
-  id: string;
-  config_option: 'hijri_adjustment';
-  value: string;
-}
-
-interface ConfigFormData {
-  config_option: 'hijri_adjustment';
-  value: string;
-}
+import { api, configApi, Config, ConfigCreate } from '../services/api';
 
 export default function PlatformConfig() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<Config | null>(null);
   const [hijriAdjustment, setHijriAdjustment] = useState<number>(0);
-  const [formData, setFormData] = useState<ConfigFormData>({
+  const [formData, setFormData] = useState<ConfigCreate>({
     config_option: 'hijri_adjustment',
     value: ''
   });
 
   // Fetch configs
-  const { data: configs, isLoading } = useQuery<Config[]>({
+  const { data: configs, isLoading } = useQuery<Config[], Error>({
     queryKey: ['configs'],
     queryFn: async () => {
-      const response = await api.get('/configs');
-      return response.data;
+      const response = await configApi.getConfigs();
+      return response;
     }
   });
 
   // Update hijriAdjustment when configs change
   useEffect(() => {
     if (configs) {
-      const hijriConfig = configs.find(c => c.config_option === 'hijri_adjustment');
+      const hijriConfig = configs.find((c: Config) => c.config_option === 'hijri_adjustment');
       if (hijriConfig) {
         setHijriAdjustment(parseInt(hijriConfig.value));
       }
@@ -47,8 +36,8 @@ export default function PlatformConfig() {
 
   // Update config mutation
   const updateConfig = useMutation({
-    mutationFn: async ({ id, data }: { id: string, data: ConfigFormData }) => {
-      return api.patch(`/configs/config/${id}`, data);
+    mutationFn: async ({ id, data }: { id: string, data: ConfigCreate }) => {
+      return configApi.updateConfig(id, data);
     },
     onSuccess: () => {
       notifications.show({
@@ -70,8 +59,8 @@ export default function PlatformConfig() {
 
   // Create config mutation
   const createConfig = useMutation({
-    mutationFn: async (data: ConfigFormData) => {
-      return api.post('/configs/config', data);
+    mutationFn: async (data: ConfigCreate) => {
+      return configApi.createConfig(data);
     },
     onSuccess: () => {
       notifications.show({
@@ -94,7 +83,7 @@ export default function PlatformConfig() {
   // Delete config mutation
   const deleteConfig = useMutation({
     mutationFn: async (id: string) => {
-      return api.delete(`/configs/config/${id}`);
+      return configApi.deleteConfig(id);
     },
     onSuccess: () => {
       notifications.show({
@@ -114,7 +103,7 @@ export default function PlatformConfig() {
   });
 
   const handleHijriAdjustmentSave = () => {
-    const hijriConfig = configs?.find(c => c.config_option === 'hijri_adjustment');
+    const hijriConfig = configs?.find((c: Config) => c.config_option === 'hijri_adjustment');
     if (hijriConfig?.id) {
       updateConfig.mutate({ 
         id: hijriConfig.id, 
