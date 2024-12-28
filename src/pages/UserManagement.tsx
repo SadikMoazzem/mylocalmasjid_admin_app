@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Container, Title, Paper, Button, Group, Modal, TextInput, Select, Checkbox, Stack } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
+import { IconPlus } from '@tabler/icons-react';
 import { authApi } from '../services/api';
 import type { UserRead, UserUpdate, UserCreate } from '../types/user';
 
@@ -132,6 +135,15 @@ export default function UserManagement(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<UserRead | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [newUser, setNewUser] = useState<UserCreate>({
+    email: '',
+    password: '',
+    role: 'masjid_admin',
+    active: true,
+    full_name: null,
+    related_masjid: null,
+  });
 
   useEffect(() => {
     loadUsers();
@@ -158,12 +170,30 @@ export default function UserManagement(): JSX.Element {
     }
   };
 
-  const handleCreateUser = async (data: UserCreate) => {
+  const handleCreateUser = async () => {
     try {
-      await authApi.createUser(data);
-      await loadUsers(); // Reload the list
+      await authApi.createUser(newUser);
+      notifications.show({
+        title: 'Success',
+        message: 'User created successfully',
+        color: 'green',
+      });
+      setCreateModalOpen(false);
+      setNewUser({
+        email: '',
+        password: '',
+        role: 'masjid_admin',
+        active: true,
+        full_name: null,
+        related_masjid: null,
+      });
+      await loadUsers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create user');
+      notifications.show({
+        title: 'Error',
+        message: err instanceof Error ? err.message : 'Failed to create user',
+        color: 'red',
+      });
     }
   };
 
@@ -182,15 +212,22 @@ export default function UserManagement(): JSX.Element {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">User Management</h1>
+    <Container size="100%" p={0}>
+      <Paper withBorder p="md">
+        <Group justify="space-between" mb="xl" wrap="wrap">
+          <Title order={2}>User Management</Title>
+          <Button
+            leftSection={<IconPlus size={16} />}
+            onClick={() => setCreateModalOpen(true)}
+          >
+            Create User
+          </Button>
+        </Group>
       
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Users</h2>
         <div className="grid gap-4">
           {users.map(user => (
             <div key={user.id} className="border p-4 rounded">
-              <div className="flex justify-between items-start">
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div>
                   <h3 className="font-medium">{user.email}</h3>
                   <p className="text-sm text-gray-600">
@@ -204,34 +241,38 @@ export default function UserManagement(): JSX.Element {
                     </span>
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <button
+                <Group wrap="wrap" className="sm:flex-nowrap">
+                  <Button
+                    variant="light"
+                    size="sm"
                     onClick={() => setEditingUser(user)}
-                    className="px-3 py-1 text-sm bg-gray-500 text-white rounded hover:bg-gray-600"
                   >
                     Edit
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="light"
+                    size="sm"
                     onClick={() => handleUpdateUser(user.id, { ...user, active: !user.active })}
-                    className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
                   >
                     Toggle Status
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="light"
+                    color="yellow"
+                    size="sm"
                     onClick={() => {
                       const newPassword = window.prompt('Enter new password');
                       if (newPassword) handleResetPassword(user.id, newPassword);
                     }}
-                    className="px-3 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                      >
-                        Reset Password
-                  </button>
-                </div>
+                  >
+                    Reset Password
+                  </Button>
+                </Group>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </Paper>
 
       {editingUser && (
         <EditUserModal
@@ -240,6 +281,67 @@ export default function UserManagement(): JSX.Element {
           onSave={handleUpdateUser}
         />
       )}
-    </div>
+
+      <Modal
+        opened={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        title="Create New User"
+      >
+        <Stack>
+          <TextInput
+            label="Email"
+            placeholder="user@example.com"
+            required
+            value={newUser.email}
+            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+          />
+          
+          <TextInput
+            label="Password"
+            type="password"
+            placeholder="Enter password"
+            required
+            value={newUser.password}
+            onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+          />
+
+          <TextInput
+            label="Full Name"
+            placeholder="John Doe"
+            value={newUser.full_name || ''}
+            onChange={(e) => setNewUser({ ...newUser, full_name: e.target.value })}
+          />
+
+          <Select
+            label="Role"
+            placeholder="Select role"
+            data={[
+              { value: 'admin', label: 'Admin' },
+              { value: 'masjid_admin', label: 'Masjid Admin' }
+            ]}
+            value={newUser.role}
+            onChange={(value) => value && setNewUser({ ...newUser, role: value as 'admin' | 'masjid_admin' })}
+          />
+
+          <TextInput
+            label="Related Masjid ID"
+            placeholder="Masjid UUID"
+            value={newUser.related_masjid || ''}
+            onChange={(e) => setNewUser({ ...newUser, related_masjid: e.target.value })}
+          />
+
+          <Checkbox
+            label="Active"
+            checked={newUser.active}
+            onChange={(e) => setNewUser({ ...newUser, active: e.currentTarget.checked })}
+          />
+
+          <Group justify="flex-end" mt="md">
+            <Button variant="light" onClick={() => setCreateModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreateUser}>Create User</Button>
+          </Group>
+        </Stack>
+      </Modal>
+    </Container>
   );
 } 

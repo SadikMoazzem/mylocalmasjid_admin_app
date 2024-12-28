@@ -17,6 +17,8 @@
     "@mantine/hooks": "^7.15.1",
     "@mantine/modals": "^7.15.1",
     "@mantine/notifications": "^7.15.1",
+    "@sentry/react": "^8.47.0",
+    "@sentry/vite-plugin": "^2.22.7",
     "@tabler/icons-react": "^3.26.0",
     "@tanstack/react-query": "^5.62.8",
     "@types/mapbox-gl": "^3.4.1",
