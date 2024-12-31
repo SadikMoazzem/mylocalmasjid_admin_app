@@ -71,7 +71,6 @@ export function PrayerTimesTable({
           </Table.Thead>
           <Table.Tbody>
             {daysInMonth.map((date) => {
-              console.log(date);
               const prayerTime = prayerTimesByDate.get(date);
               const rowRef = isToday(date) ? todayRowRef : undefined;
 
