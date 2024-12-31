@@ -7,8 +7,8 @@ export default defineConfig({
   plugins: [
     react(),
     sentryVitePlugin({
-      org: "my-local-masjid",
-      project: "admin-app",
+      org: "deenful",
+      project: "mlm-admin",
       authToken: process.env.SENTRY_AUTH_TOKEN,
       sourcemaps: {
         assets: "./dist/**",
