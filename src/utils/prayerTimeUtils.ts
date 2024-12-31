@@ -28,16 +28,25 @@ export function formatHijriDate(dateStr: string) {
   return `${day} ${month}`;
 }
 
-export function getDaysInMonth(date: Date) {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const lastDay = new Date(year, month + 1, 0).getDate();
+export function getDaysInMonth(date: Date): string[] {
+    // Validate the input date
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+      throw new Error('Invalid date provided');
+    }
   
-  return Array.from({ length: lastDay }, (_, i) => {
-    const day = new Date(year, month, i + 1);
-    return day.toISOString().split('T')[0];
-  });
-}
+    const year = date.getFullYear();
+    const month = date.getMonth();
+  
+    // Get the last day of the month by creating a date in the next month and subtracting one day
+    const lastDay = new Date(year, month + 1, 0).getDate();
+  
+    // Generate the array of days in the month (ISO format: YYYY-MM-DD)
+    return Array.from({ length: lastDay }, (_, i) => {
+      const day = new Date(Date.UTC(year, month, i + 1)); // Use UTC to avoid timezone-related issues
+      return day.toISOString().split('T')[0];
+    });
+  }
+  
 
 export function isToday(dateStr: string) {
   const today = new Date();

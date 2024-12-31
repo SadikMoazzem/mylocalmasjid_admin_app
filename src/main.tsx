@@ -8,8 +8,10 @@ import './output.css';
 import App from './App.tsx';
 import { initSentry } from './utils/sentry';
 
-// Initialize Sentry
-initSentry();
+// Initialize Sentry only in production
+if (import.meta.env.PROD) {
+  initSentry();
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

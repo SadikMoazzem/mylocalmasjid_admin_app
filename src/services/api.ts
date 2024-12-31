@@ -82,6 +82,7 @@ export interface PrayerTime {
   id?: string;
   masjid_id: string;
   date: string;
+  hijri_date: string;
   fajr_start: string;
   fajr_jammat: string;
   sunrise: string;

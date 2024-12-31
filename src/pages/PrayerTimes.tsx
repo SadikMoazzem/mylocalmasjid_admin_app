@@ -1,10 +1,9 @@
 import { Container, Group, Button, LoadingOverlay, Switch, Select } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
-import { masjidApi } from '../services/api';
+import { masjidApi, PrayerTime } from '../services/api';
 import { IconChevronLeft, IconChevronRight, IconClock, IconPrinter, Icon24Hours, IconUpload } from '@tabler/icons-react';
 import { useState, useMemo } from 'react';
 import { useDisclosure } from '@mantine/hooks';
-import { PrayerTime } from '../types/prayerTimes';
 import { getMonthDates, getDaysInMonth } from '../utils/prayerTimeUtils';
 import { EditPrayerTimeModal } from '../components/PrayerTimes/EditPrayerTimeModal';
 import { CsvUploadModal } from '../components/PrayerTimes/CsvUploadModal';
@@ -20,21 +19,26 @@ function getMonthYear(date: Date) {
   return `${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-function getMonthOptions(currentDate: Date) {
-  const options = [];
-  const startDate = new Date(currentDate);
-  startDate.setMonth(startDate.getMonth() - 1); // Previous month
+interface MonthOption {
+  value: string;
+  label: string;
+}
+
+function getMonthOptions(currentDate: Date): MonthOption[] {
+  const options = new Set<MonthOption>();
+  const date = new Date(currentDate);
+  date.setMonth(date.getMonth() - 1); // Previous month
 
   for (let i = 0; i < 14; i++) { // Previous month + current month + 12 months
-    const date = new Date(startDate);
-    date.setMonth(startDate.getMonth() + i);
-    options.push({
-      value: `${date.getMonth()}-${date.getFullYear()}`,
+    const value = `${date.getMonth()}-${date.getFullYear()}`;
+    options.add({
+      value,
       label: getMonthYear(date)
     });
+    date.setMonth(date.getMonth() + 1);
   }
 
-  return options;
+  return Array.from(options);
 }
 
 function PrayerTimes() {

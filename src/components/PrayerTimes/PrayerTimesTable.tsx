@@ -1,6 +1,6 @@
 import { Table, ScrollArea, Text, Box, Center, Stack, Button } from '@mantine/core';
 import { IconEdit, IconCalendarX } from '@tabler/icons-react';
-import { PrayerTime } from '../../types/prayerTimes';
+import { PrayerTime } from '../../services/api';
 import { formatTime, formatHijriDate, isToday } from '../../utils/prayerTimeUtils';
 import { useRef, useEffect } from 'react';
 
@@ -71,6 +71,7 @@ export function PrayerTimesTable({
           </Table.Thead>
           <Table.Tbody>
             {daysInMonth.map((date) => {
+              console.log(date);
               const prayerTime = prayerTimesByDate.get(date);
               const rowRef = isToday(date) ? todayRowRef : undefined;
 

@@ -4,18 +4,19 @@ import { devtools, persist } from 'zustand/middleware';
 interface User {
   id: string;
   email: string;
-  full_name?: string;
   role: 'admin' | 'masjid_admin';
-  related_masjid?: string;
+  active: boolean;
+  full_name: string | null;
+  related_masjid: string | null;
 }
 
 interface Masjid {
   id: string;
   name: string;
   type: string;
-  madhab: string;
   locale: string;
-  website?: string;
+  madhab: string;
+  website: string | null;
   has_times: boolean;
   active: boolean;
 }
